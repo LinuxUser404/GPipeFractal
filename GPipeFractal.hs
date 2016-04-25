@@ -56,11 +56,11 @@ colorFunc :: (Floating a, OrdB a) => a -> a -> V3 a
 colorFunc x y = V3 r g b
   where
     --z :: (Num b) => Complex b
-    z = 0.0 :+ 0.0
+    z = x :+ y
     c = ((x/10.0) -0.2) :+ (y/10.0)
-    fractl = fractal c z 0.0
-    col1 = (\( _ , iter) -> iter) fractl
-    r = col1
+--    fractl = fractal c z 0.0
+--    col1 = (\( _ , iter) -> iter) fractl
+    r = 0.5 + 0.5 * cos (10.0 * x)
     g = 0.5 + 0.5 * cos (10.0 * y)
     b = 0.5 + 0.5 * cos (10.0 * (Main.magnitude (myMult z z)))
 
@@ -81,9 +81,9 @@ myMult (xr :+ xi) (yr :+ yi) = (xr * yr - xi * yi) :+ (xr * yi + xi * yr)
 myPlus :: (Floating a) => Complex a -> Complex a -> Complex a
 myPlus (xr :+ xi) (yr :+ yi) = (xr + yr) :+ (xi + yi)
 
-fractal :: (Floating a, OrdB a) => Complex a -> Complex a -> a -> (Complex a, a)
-fractal c z iter -- = ((1.0 :+ 1.0), 0.0)
+--fractal :: (Floating a, OrdB a) => Complex a -> Complex a -> a -> (Complex a, a)
+--fractal c z iter -- = ((1.0 :+ 1.0), 0.0)
 --  | iter >= fromIntegral(maxIters)   = ((1.0 :+ 1.0), 0.0)
 --  | ((realPart (myMult z z)) > 4.0) = ((myPlus (myMult z z) c), iter)
-  | otherwise                         = fractal c (myPlus (myMult z z) c) (iter + 1)
+--  | otherwise                         = fractal c (myPlus (myMult z z) c) (iter + 1)
 
