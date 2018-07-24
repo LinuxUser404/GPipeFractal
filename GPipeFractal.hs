@@ -17,7 +17,8 @@ import Data.Complex
   
 main =    do
   putStrLn $ "Number of threads: " ++ show numCapabilities
-  runContextT GLFW.newContext (ContextFormatColor RGB8) $ do  
+  runContextT GLFW.defaultHandleConfig $ do
+    win <- newWindow (WindowFormatColorDepth RGB8 Depth16) (GLFW.defaultWindowConfig "GPipeFractal")
     vertexBuffer :: Buffer os (B4 Float, B3 Float) <- newBuffer 4  
     writeBuffer vertexBuffer 0 [ (V4 (-1) (-1) 0 1, V3 1 0 0)  
                                , (V4   1  (-1) 0 1, V3 0 1 0)  
@@ -29,21 +30,21 @@ main =    do
       primitiveStream <- toPrimitiveStream id  
       fragmentStream <- rasterize (const (Front, ViewPort (V2 0 0) (V2 800 600), DepthRange 0 1)) primitiveStream
       let fragmentStream2 = myFragmentShader fragmentStream
-      drawContextColor (const (ContextColorOption NoBlending (V3 True True True))) fragmentStream2
+      drawWindowColor (const (win, ContextColorOption NoBlending (V3 True True True))) fragmentStream2
       
-    mainLoop vertexBuffer shader   
+    mainLoop vertexBuffer shader win
     
-mainLoop vertexBuffer shader = do    
+mainLoop vertexBuffer shader win = do    
   render $ do   
-    clearContextColor (V3 0 0 0)   
+    clearWindowColor win (V3 0 0 0)
     vertexArray <- newVertexArray vertexBuffer  
     let primitiveArray = toPrimitiveArray TriangleFan vertexArray  
     shader primitiveArray   
-  swapContextBuffers  
+  swapWindowBuffers win
     
-  closeRequested <- GLFW.windowShouldClose   
-  unless closeRequested $  
-    mainLoop vertexBuffer shader   
+  closeRequested <- GLFW.windowShouldClose win
+  unless (closeRequested == Just True) $  
+    mainLoop vertexBuffer shader win  
 
 
 
@@ -67,11 +68,6 @@ colorFunc x y = V3 r g b
 magnitude :: (Floating a) => Complex a -> a
 magnitude (r :+ i) = sqrt (r * r + i * i)
 
-{-
-myComplex :: (Floating a) => a -> a -> Complex a
-myComplex r i = r :+ i
--}
-
 maxIters :: Int
 maxIters = 100
 
@@ -80,10 +76,4 @@ myMult (xr :+ xi) (yr :+ yi) = (xr * yr - xi * yi) :+ (xr * yi + xi * yr)
 
 myPlus :: (Floating a) => Complex a -> Complex a -> Complex a
 myPlus (xr :+ xi) (yr :+ yi) = (xr + yr) :+ (xi + yi)
-
---fractal :: (Floating a, OrdB a) => Complex a -> Complex a -> a -> (Complex a, a)
---fractal c z iter -- = ((1.0 :+ 1.0), 0.0)
---  | iter >= fromIntegral(maxIters)   = ((1.0 :+ 1.0), 0.0)
---  | ((realPart (myMult z z)) > 4.0) = ((myPlus (myMult z z) c), iter)
---  | otherwise                         = fractal c (myPlus (myMult z z) c) (iter + 1)
 
