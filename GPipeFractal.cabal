@@ -17,15 +17,12 @@ executable GPipeFractal
   other-modules:
   -- other-extensions:
   build-depends:       base >=4.3 && <5.0,
---                       OpenCL,
                        numbers,
                        parsec,
---                       criterion,
                        process,
                        vector,
                        bytestring,
                        ghc-prim,
---                       gsl-random,
                        containers,
                        GPipe >= 2.2.4,
                        GPipe-GLFW >= 1.4.1.2,
