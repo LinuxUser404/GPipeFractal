@@ -45,7 +45,7 @@ main = do
 mainLoop :: (ContextColorFormat c, Color c Float ~ V3 Float) =>
                       Buffer os (B4 Float, B3 Float)
                       -> (PrimitiveArray Triangles (B4 Float, B3 Float) -> Render os ())
-                      -> Window os (c) ds
+                      -> Window os c ds
                       -> ContextT GLFW.Handle os IO ()
 mainLoop vertexBuffer shader win = do
   render $ do
@@ -71,7 +71,7 @@ colorFunc c = V3 r' g' b'
   where
     fractl :: S F Int
     fractl = fractal c
-    color1 = (toFloat fractl) / (toFloat maxIters)
+    color1 = toFloat fractl / toFloat maxIters
     r' = color1
     g' = color1
     b' = color1
