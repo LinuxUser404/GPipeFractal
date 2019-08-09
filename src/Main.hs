@@ -7,45 +7,56 @@
 --{-# LANGUAGE TemplateHaskell #-}
 
 
-module Main where 
+module Main where
 
 import GHC.Conc (numCapabilities) -- check number of threads available
 
 import Prelude hiding ((<*))
-import Graphics.GPipe   
-import qualified "GPipe-GLFW" Graphics.GPipe.Context.GLFW as GLFW  
-import Control.Monad (unless)  
-import Data.Tuple (swap)
+--import Graphics.GPipe.Expr
+import Graphics.GPipe
 
+import qualified "GPipe-GLFW" Graphics.GPipe.Context.GLFW as GLFW
+import Control.Monad (unless)
+
+
+--type VBuffer = Buffer os (B4 Float, B3 Float)
+-- type VShader = (ContextHandler ctx, MonadIO m, MonadException m) => ContextT ctx os m (CompiledShader os x)
+
+main :: IO ()
 main = do
   putStrLn $ "Number of threads: " ++ show numCapabilities
   runContextT GLFW.defaultHandleConfig $ do
     win <- newWindow (WindowFormatColorDepth RGB8 Depth16) (GLFW.WindowConfig 500 500 "GPipe Fractal" Nothing [] Nothing)
-    vertexBuffer :: Buffer os (B4 Float, B3 Float) <- newBuffer 4  
-    writeBuffer vertexBuffer 0 [ (V4 (-1) (-1) 0 1, V3 1 0 0)  
-                               , (V4   1  (-1) 0 1, V3 0 1 0)  
-                               , (V4   1    1  0 1, V3 0 0 1)  
-                               , (V4 (-1)   1  0 1, V3 1 1 1)  
-                               ]  
-                        
-    shader <- compileShader $ do  
+    vertexBuffer :: Buffer os (B4 Float, B3 Float) <- newBuffer 4
+    writeBuffer vertexBuffer 0 [ (V4 (-1) (-1) 0 1, V3 1 0 0)
+                               , (V4   1  (-1) 0 1, V3 0 1 0)
+                               , (V4   1    1  0 1, V3 0 0 1)
+                               , (V4 (-1)   1  0 1, V3 1 1 1)
+                               ]
+
+    shader <- compileShader $ do
       primitiveStream <- toPrimitiveStream id
       fragmentStream <- rasterize (const (Front, ViewPort (V2 0 0) (V2 500 500), DepthRange 0 1)) primitiveStream
       let fragmentStream2 = myFragmentShader fragmentStream
       drawWindowColor (const (win, ContextColorOption NoBlending (V3 True True True))) fragmentStream2
-      
+
     mainLoop vertexBuffer shader win
-    
-mainLoop vertexBuffer shader win = do    
-  render $ do   
-    clearWindowColor win (V3 0 0 0)   
-    vertexArray <- newVertexArray vertexBuffer  
-    let primitiveArray = toPrimitiveArray TriangleFan vertexArray  
-    shader primitiveArray   
+
+mainLoop :: (ContextColorFormat c, Color c Float ~ V3 Float) =>
+                      Buffer os (B4 Float, B3 Float)
+                      -> (PrimitiveArray Triangles (B4 Float, B3 Float) -> Render os ())
+                      -> Window os (c) ds
+                      -> ContextT GLFW.Handle os IO ()
+mainLoop vertexBuffer shader win = do
+  render $ do
+    clearWindowColor win (V3 0 0 0)
+    vertexArray <- newVertexArray vertexBuffer
+    let primitiveArray = toPrimitiveArray TriangleFan vertexArray
+    shader primitiveArray
   swapWindowBuffers win
-    
+
   closeRequested <- GLFW.windowShouldClose win
-  unless (closeRequested == Just True) $  
+  unless (closeRequested == Just True) $
     mainLoop vertexBuffer shader win
 
 
