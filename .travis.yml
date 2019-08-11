@@ -1,5 +1,6 @@
 dist: xenial
 language: haskell
+cabal: "2.4"
 addons:
   apt:
     packages:
@@ -13,6 +14,7 @@ before_install:  # remove this when GPipe > 2.2.4 is on hackage
   - git clone https://github.com/tobbebex/GPipe-Core.git
   - cd ./GPipe-Core
   - cabal v2-install all
+  - cd ..
 install:
   - cabal v2-build all --only-dependencies
 script:
