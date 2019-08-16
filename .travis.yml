@@ -9,8 +9,8 @@ addons:
     packages:
       - libglfw3-dev
 ghc:
-  - "8.0"
-  - "8.2"
+#  - "8.0" # GPipe 2.2.4 fails to install
+#  - "8.2" # GPipe 2.2.4 fails to install
   - "8.4"
   - "8.6"
 install:
